@@ -20,20 +20,59 @@ def load_data():
 def save_data(df):
     df.to_csv(DATA_FILE, index=False)
 
-# Tampilan mobile
+# -------------------------
+# Setup Layout dan Page
+# -------------------------
 st.set_page_config(page_title="Data Kependudukan", layout="centered")
 
-st.title("📱 Data Kependudukan Mobile")
-st.markdown("Dusun Klotok, Desa Simogirang, Kec. Prambon")
+if "page" not in st.session_state:
+    st.session_state.page = "home"
 
-menu = st.selectbox("Menu", ["Lihat Data", "Input Data Baru", "Edit/Hapus Data"])
+# -------------------------
+# Tampilan HOME MENU
+# -------------------------
+if st.session_state.page == "home":
+    st.markdown("<h1 style='text-align:center;'>📱 Data Kependudukan</h1>", unsafe_allow_html=True)
+    st.markdown("<h3 style='text-align:center;'>Dusun Klotok, Desa Simogirang</h3>", unsafe_allow_html=True)
 
-df = load_data()
+    st.markdown("---")
+    st.markdown("## 📋 Pilih Menu", unsafe_allow_html=True)
 
-# -------------------------------
-# Input Data
-# -------------------------------
-if menu == "Input Data Baru":
+    col1, col2 = st.columns(2)
+    with col1:
+        if st.button("📄 Lihat Data", use_container_width=True):
+            st.session_state.page = "lihat"
+    with col2:
+        if st.button("➕ Input Data", use_container_width=True):
+            st.session_state.page = "input"
+
+    col3, col4 = st.columns(2)
+    with col3:
+        if st.button("✏️ Edit / Hapus", use_container_width=True):
+            st.session_state.page = "edit"
+    with col4:
+        if st.button("🔁 Kembali ke Awal", use_container_width=True):
+            st.session_state.page = "home"
+
+    st.markdown("---")
+    st.markdown("<p style='text-align:center;'>M8TB • 2025</p>", unsafe_allow_html=True)
+
+# -------------------------
+# LIHAT DATA
+# -------------------------
+elif st.session_state.page == "lihat":
+    st.header("📄 Lihat Data Penduduk")
+    df = load_data()
+    st.dataframe(df, use_container_width=True)
+    st.button("⬅️ Kembali ke Menu", on_click=lambda: st.session_state.update({"page": "home"}))
+
+# -------------------------
+# INPUT DATA
+# -------------------------
+elif st.session_state.page == "input":
+    st.header("➕ Input Data Baru")
+    df = load_data()
+
     with st.form("form_input"):
         nama = st.text_input("Nama Lengkap")
         nik = st.text_input("NIK")
@@ -70,23 +109,20 @@ if menu == "Input Data Baru":
             save_data(df)
             st.success("✅ Data berhasil disimpan!")
 
-# -------------------------------
-# Lihat Data
-# -------------------------------
-elif menu == "Lihat Data":
-    st.subheader("📋 Data Penduduk")
-    st.dataframe(df, use_container_width=True)
+    st.button("⬅️ Kembali ke Menu", on_click=lambda: st.session_state.update({"page": "home"}))
 
-# -------------------------------
-# Edit/Hapus Data
-# -------------------------------
-elif menu == "Edit/Hapus Data":
-    st.subheader("✏️ Edit atau 🗑️ Hapus Data")
+# -------------------------
+# EDIT DATA
+# -------------------------
+elif st.session_state.page == "edit":
+    st.header("✏️ Edit / Hapus Data")
+    df = load_data()
+
     if df.empty:
         st.info("Belum ada data.")
     else:
-        selected_index = st.selectbox("Pilih Data Berdasarkan NIK", df['NIK'].tolist())
-        selected_row = df[df['NIK'] == selected_index].iloc[0]
+        selected_nama = st.selectbox("Cari Nama Penduduk", df['Nama'].tolist())
+        selected_row = df[df['Nama'] == selected_nama].iloc[0]
 
         with st.form("form_edit"):
             nama = st.text_input("Nama Lengkap", selected_row['Nama'])
@@ -107,7 +143,7 @@ elif menu == "Edit/Hapus Data":
             delete = col2.form_submit_button("🗑️ Hapus")
 
             if update:
-                df.loc[df['NIK'] == selected_index] = [
+                df.loc[df['Nama'] == selected_nama] = [
                     nama, nik, kk, jk, tempat, tgl.strftime("%Y-%m-%d"),
                     status, agama, pendidikan, pekerjaan, rt, "RW 01", alamat
                 ]
@@ -115,6 +151,8 @@ elif menu == "Edit/Hapus Data":
                 st.success("✅ Data berhasil diperbarui!")
 
             if delete:
-                df = df[df['NIK'] != selected_index]
+                df = df[df['Nama'] != selected_nama]
                 save_data(df)
                 st.warning("🗑️ Data berhasil dihapus!")
+
+    st.button("⬅️ Kembali ke Menu", on_click=lambda: st.session_state.update({"page": "home"}))
