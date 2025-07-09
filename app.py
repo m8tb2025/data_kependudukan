@@ -1,83 +1,56 @@
 import streamlit as st
 import pandas as pd
 import datetime
+import os
 
-# Load atau buat data dummy
 DATA_FILE = 'data_penduduk.csv'
 
-@st.cache_data
 def load_data():
-    try:
+    if os.path.exists(DATA_FILE):
         return pd.read_csv(DATA_FILE)
-    except:
-        # Jika file belum ada, buat data dummy
-        data_dummy = pd.DataFrame({
-            'Nama': ['Andi', 'Siti'],
-            'NIK': ['3512345678900001', '3512345678900002'],
-            'No KK': ['3512345678000001', '3512345678000002'],
-            'Jenis Kelamin': ['Laki-laki', 'Perempuan'],
-            'Tempat Lahir': ['Sidoarjo', 'Prambon'],
-            'Tanggal Lahir': ['1990-01-01', '1992-02-02'],
-            'Status Perkawinan': ['Kawin', 'Belum Kawin'],
-            'Agama': ['Islam', 'Islam'],
-            'Pendidikan': ['SMA', 'S1'],
-            'Pekerjaan': ['Petani', 'Guru'],
-            'RT': ['RT 01', 'RT 02'],
-            'RW': ['RW 01', 'RW 01'],
-            'Alamat': ['Dusun Klotok', 'Dusun Klotok']
-        })
-        data_dummy.to_csv(DATA_FILE, index=False)
-        return data_dummy
+    else:
+        df = pd.DataFrame(columns=[
+            'Nama', 'NIK', 'No KK', 'Jenis Kelamin', 'Tempat Lahir',
+            'Tanggal Lahir', 'Status Perkawinan', 'Agama', 'Pendidikan',
+            'Pekerjaan', 'RT', 'RW', 'Alamat'
+        ])
+        df.to_csv(DATA_FILE, index=False)
+        return df
 
-def save_data(new_entry):
-    df = load_data()
-    df = pd.concat([df, pd.DataFrame([new_entry])], ignore_index=True)
+def save_data(df):
     df.to_csv(DATA_FILE, index=False)
 
-# -----------------------
-# Streamlit Layout
-# -----------------------
-st.set_page_config(page_title="Data Kependudukan RT/RW", layout="wide")
+# Tampilan mobile
+st.set_page_config(page_title="Data Kependudukan", layout="centered")
 
-st.title("📋 Data Kependudukan Dusun Klotok")
-st.subheader("Desa Simogirang, Kecamatan Prambon")
+st.title("📱 Data Kependudukan Mobile")
+st.markdown("Dusun Klotok, Desa Simogirang, Kec. Prambon")
 
-menu = st.sidebar.selectbox("Pilih Menu", ["Lihat Data", "Input Data", "Visualisasi"])
+menu = st.selectbox("Menu", ["Lihat Data", "Input Data Baru", "Edit/Hapus Data"])
 
-# -----------------------
-# Halaman Lihat Data
-# -----------------------
-if menu == "Lihat Data":
-    df = load_data()
-    st.dataframe(df, use_container_width=True)
+df = load_data()
 
-# -----------------------
-# Halaman Input Data
-# -----------------------
-elif menu == "Input Data":
+# -------------------------------
+# Input Data
+# -------------------------------
+if menu == "Input Data Baru":
     with st.form("form_input"):
-        st.markdown("### 📝 Input Data Penduduk")
-
-        col1, col2 = st.columns(2)
-        with col1:
-            nama = st.text_input("Nama Lengkap")
-            nik = st.text_input("NIK")
-            kk = st.text_input("Nomor KK")
-            jk = st.selectbox("Jenis Kelamin", ["Laki-laki", "Perempuan"])
-            tempat = st.text_input("Tempat Lahir")
-            tgl = st.date_input("Tanggal Lahir", datetime.date(1990, 1, 1))
-        with col2:
-            status = st.selectbox("Status Perkawinan", ["Belum Kawin", "Kawin", "Cerai Hidup", "Cerai Mati"])
-            agama = st.selectbox("Agama", ["Islam", "Kristen", "Katolik", "Hindu", "Budha", "Khonghucu", "Lainnya"])
-            pendidikan = st.selectbox("Pendidikan Terakhir", ["Tidak Sekolah", "SD", "SMP", "SMA", "D1", "D3", "S1", "S2", "S3"])
-            pekerjaan = st.text_input("Pekerjaan")
-            rt = st.selectbox("RT", [f"RT 0{i+1}" for i in range(7)])
-            rw = "RW 01"
-        
+        nama = st.text_input("Nama Lengkap")
+        nik = st.text_input("NIK")
+        kk = st.text_input("Nomor KK")
+        jk = st.selectbox("Jenis Kelamin", ["Laki-laki", "Perempuan"])
+        tempat = st.text_input("Tempat Lahir")
+        tgl = st.date_input("Tanggal Lahir", datetime.date(1990, 1, 1))
+        status = st.selectbox("Status Perkawinan", ["Belum Kawin", "Kawin", "Cerai Hidup", "Cerai Mati"])
+        agama = st.selectbox("Agama", ["Islam", "Kristen", "Katolik", "Hindu", "Budha", "Khonghucu", "Lainnya"])
+        pendidikan = st.selectbox("Pendidikan Terakhir", ["Tidak Sekolah", "SD", "SMP", "SMA", "D1", "D3", "S1", "S2", "S3"])
+        pekerjaan = st.text_input("Pekerjaan")
+        rt = st.selectbox("RT", [f"RT 0{i+1}" for i in range(7)])
+        rw = "RW 01"
         alamat = st.text_area("Alamat Lengkap", "Dusun Klotok")
 
-        submitted = st.form_submit_button("Simpan Data")
-        if submitted:
+        simpan = st.form_submit_button("✅ Simpan")
+        if simpan:
             new_data = {
                 'Nama': nama,
                 'NIK': nik,
@@ -93,25 +66,55 @@ elif menu == "Input Data":
                 'RW': rw,
                 'Alamat': alamat
             }
-            save_data(new_data)
+            df = pd.concat([df, pd.DataFrame([new_data])], ignore_index=True)
+            save_data(df)
             st.success("✅ Data berhasil disimpan!")
 
-# -----------------------
-# Halaman Visualisasi
-# -----------------------
-elif menu == "Visualisasi":
-    df = load_data()
-    st.markdown("### 📊 Visualisasi Kependudukan")
+# -------------------------------
+# Lihat Data
+# -------------------------------
+elif menu == "Lihat Data":
+    st.subheader("📋 Data Penduduk")
+    st.dataframe(df, use_container_width=True)
 
-    col1, col2 = st.columns(2)
+# -------------------------------
+# Edit/Hapus Data
+# -------------------------------
+elif menu == "Edit/Hapus Data":
+    st.subheader("✏️ Edit atau 🗑️ Hapus Data")
+    if df.empty:
+        st.info("Belum ada data.")
+    else:
+        selected_index = st.selectbox("Pilih Data Berdasarkan NIK", df['NIK'].tolist())
+        selected_row = df[df['NIK'] == selected_index].iloc[0]
 
-    with col1:
-        st.bar_chart(df['RT'].value_counts())
-    with col2:
-        st.bar_chart(df['Jenis Kelamin'].value_counts())
+        with st.form("form_edit"):
+            nama = st.text_input("Nama Lengkap", selected_row['Nama'])
+            nik = st.text_input("NIK", selected_row['NIK'])
+            kk = st.text_input("Nomor KK", selected_row['No KK'])
+            jk = st.selectbox("Jenis Kelamin", ["Laki-laki", "Perempuan"], index=["Laki-laki", "Perempuan"].index(selected_row['Jenis Kelamin']))
+            tempat = st.text_input("Tempat Lahir", selected_row['Tempat Lahir'])
+            tgl = st.date_input("Tanggal Lahir", pd.to_datetime(selected_row['Tanggal Lahir']))
+            status = st.selectbox("Status Perkawinan", ["Belum Kawin", "Kawin", "Cerai Hidup", "Cerai Mati"], index=["Belum Kawin", "Kawin", "Cerai Hidup", "Cerai Mati"].index(selected_row['Status Perkawinan']))
+            agama = st.selectbox("Agama", ["Islam", "Kristen", "Katolik", "Hindu", "Budha", "Khonghucu", "Lainnya"], index=["Islam", "Kristen", "Katolik", "Hindu", "Budha", "Khonghucu", "Lainnya"].index(selected_row['Agama']))
+            pendidikan = st.selectbox("Pendidikan Terakhir", ["Tidak Sekolah", "SD", "SMP", "SMA", "D1", "D3", "S1", "S2", "S3"], index=["Tidak Sekolah", "SD", "SMP", "SMA", "D1", "D3", "S1", "S2", "S3"].index(selected_row['Pendidikan']))
+            pekerjaan = st.text_input("Pekerjaan", selected_row['Pekerjaan'])
+            rt = st.selectbox("RT", [f"RT 0{i+1}" for i in range(7)], index=[f"RT 0{i+1}" for i in range(7)].index(selected_row['RT']))
+            alamat = st.text_area("Alamat Lengkap", selected_row['Alamat'])
 
-    st.markdown("Distribusi Pendidikan")
-    st.bar_chart(df['Pendidikan'].value_counts())
+            col1, col2 = st.columns(2)
+            update = col1.form_submit_button("✏️ Update")
+            delete = col2.form_submit_button("🗑️ Hapus")
 
-    st.markdown("Distribusi Agama")
-    st.bar_chart(df['Agama'].value_counts())
+            if update:
+                df.loc[df['NIK'] == selected_index] = [
+                    nama, nik, kk, jk, tempat, tgl.strftime("%Y-%m-%d"),
+                    status, agama, pendidikan, pekerjaan, rt, "RW 01", alamat
+                ]
+                save_data(df)
+                st.success("✅ Data berhasil diperbarui!")
+
+            if delete:
+                df = df[df['NIK'] != selected_index]
+                save_data(df)
+                st.warning("🗑️ Data berhasil dihapus!")
