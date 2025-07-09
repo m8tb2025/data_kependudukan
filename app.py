@@ -7,7 +7,9 @@ from datetime import datetime
 
 DATA_FILE = 'data_penduduk.csv'
 
-# Load dan simpan data
+# -------------------- #
+# Fungsi Data
+# -------------------- #
 def load_data():
     if os.path.exists(DATA_FILE):
         return pd.read_csv(DATA_FILE)
@@ -23,7 +25,9 @@ def load_data():
 def save_data(df):
     df.to_csv(DATA_FILE, index=False)
 
-# Fungsi waktu real-time
+# -------------------- #
+# Fungsi Waktu
+# -------------------- #
 def waktu_sekarang():
     tz = pytz.timezone('Asia/Jakarta')
     now = datetime.now(tz)
@@ -39,23 +43,24 @@ def waktu_sekarang():
         .replace("September", "September").replace("October", "Oktober") \
         .replace("November", "November").replace("December", "Desember")
 
-# Setup tampilan
+# -------------------- #
+# Konfigurasi Layout
+# -------------------- #
 st.set_page_config(page_title="Data Kependudukan", layout="centered")
 
 if "page" not in st.session_state:
     st.session_state.page = "home"
 
-# -------------------------------
+# -------------------- #
 # HALAMAN MENU UTAMA
-# -------------------------------
+# -------------------- #
 if st.session_state.page == "home":
     st.markdown("""
-    st.markdown("""
-    <div style="text-align:center; background-color:#e7f0fa; padding: 20px; border-radius: 12px;">
-        <h1 style="color:#0b5394; font-weight:bold; text-transform:uppercase;">📱 DATA KEPENDUDUKAN</h1>
-        <h3 style="margin-top:-10px; color:#000; font-weight:bold;">Dusun Klotok, Desa Simogirang</h3>
-        <p style="font-size:16px; color:#444;">""" + waktu_sekarang() + """</p>
-    </div>
+        <div style="text-align:center; background-color:#e7f0fa; padding: 20px; border-radius: 12px;">
+            <h1 style="color:#0b5394; font-weight:bold; text-transform:uppercase;">📱 DATA KEPENDUDUKAN</h1>
+            <h3 style="margin-top:-10px; color:#000000; font-weight:bold;">Dusun Klotok, Desa Simogirang</h3>
+            <p style="font-size:16px; color:#444;">""" + waktu_sekarang() + """</p>
+        </div>
     """, unsafe_allow_html=True)
 
     st.markdown("## 📋 Pilih Menu", unsafe_allow_html=True)
@@ -79,18 +84,18 @@ if st.session_state.page == "home":
     st.markdown("---")
     st.markdown("<p style='text-align:center; font-size:15px; color:#777;'>RT. 1 / RW. 2</p>", unsafe_allow_html=True)
 
-# -------------------------------
+# -------------------- #
 # HALAMAN LIHAT DATA
-# -------------------------------
+# -------------------- #
 elif st.session_state.page == "lihat":
     st.header("📄 Lihat Data Penduduk")
     df = load_data()
     st.dataframe(df, use_container_width=True)
     st.button("⬅️ Kembali ke Menu", on_click=lambda: st.session_state.update({"page": "home"}))
 
-# -------------------------------
+# -------------------- #
 # HALAMAN INPUT DATA
-# -------------------------------
+# -------------------- #
 elif st.session_state.page == "input":
     st.header("➕ Input Data Baru")
     df = load_data()
@@ -133,9 +138,9 @@ elif st.session_state.page == "input":
 
     st.button("⬅️ Kembali ke Menu", on_click=lambda: st.session_state.update({"page": "home"}))
 
-# -------------------------------
+# -------------------- #
 # HALAMAN EDIT DATA
-# -------------------------------
+# -------------------- #
 elif st.session_state.page == "edit":
     st.header("✏️ Edit / Hapus Data")
     df = load_data()
