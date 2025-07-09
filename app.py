@@ -55,7 +55,7 @@ if st.session_state.page == "home":
             st.session_state.page = "home"
 
     st.markdown("---")
-    st.markdown("<p style='text-align:center;'>M8TB • 2025</p>", unsafe_allow_html=True)
+    st.markdown("<p style='text-align:center;'>rt.1/rw.2</p>", unsafe_allow_html=True)
 
 # -------------------------
 # LIHAT DATA
