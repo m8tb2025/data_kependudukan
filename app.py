@@ -3,7 +3,7 @@ import pandas as pd
 import datetime
 
 # Load atau buat data dummy
-DATA_FILE = 'data/data_penduduk.csv'
+DATA_FILE = 'data_penduduk.csv'
 
 @st.cache_data
 def load_data():
