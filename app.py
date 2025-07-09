@@ -7,9 +7,6 @@ from datetime import datetime
 
 DATA_FILE = 'data_penduduk.csv'
 
-# -------------------- #
-# Fungsi Data
-# -------------------- #
 def load_data():
     if os.path.exists(DATA_FILE):
         return pd.read_csv(DATA_FILE)
@@ -25,9 +22,6 @@ def load_data():
 def save_data(df):
     df.to_csv(DATA_FILE, index=False)
 
-# -------------------- #
-# Fungsi Waktu
-# -------------------- #
 def waktu_sekarang():
     tz = pytz.timezone('Asia/Jakarta')
     now = datetime.now(tz)
@@ -43,17 +37,11 @@ def waktu_sekarang():
         .replace("September", "September").replace("October", "Oktober") \
         .replace("November", "November").replace("December", "Desember")
 
-# -------------------- #
-# Konfigurasi Layout
-# -------------------- #
 st.set_page_config(page_title="Data Kependudukan", layout="centered")
 
 if "page" not in st.session_state:
     st.session_state.page = "home"
 
-# -------------------- #
-# HALAMAN MENU UTAMA
-# -------------------- #
 if st.session_state.page == "home":
     st.markdown("""
         <div style="text-align:center; background-color:#e7f0fa; padding: 20px; border-radius: 12px;">
@@ -84,18 +72,12 @@ if st.session_state.page == "home":
     st.markdown("---")
     st.markdown("<p style='text-align:center; font-size:15px; color:#777;'>RT. 1 / RW. 2</p>", unsafe_allow_html=True)
 
-# -------------------- #
-# HALAMAN LIHAT DATA
-# -------------------- #
 elif st.session_state.page == "lihat":
     st.header("📄 Lihat Data Penduduk")
     df = load_data()
     st.dataframe(df, use_container_width=True)
     st.button("⬅️ Kembali ke Menu", on_click=lambda: st.session_state.update({"page": "home"}))
 
-# -------------------- #
-# HALAMAN INPUT DATA
-# -------------------- #
 elif st.session_state.page == "input":
     st.header("➕ Input Data Baru")
     df = load_data()
@@ -138,9 +120,6 @@ elif st.session_state.page == "input":
 
     st.button("⬅️ Kembali ke Menu", on_click=lambda: st.session_state.update({"page": "home"}))
 
-# -------------------- #
-# HALAMAN EDIT DATA
-# -------------------- #
 elif st.session_state.page == "edit":
     st.header("✏️ Edit / Hapus Data")
     df = load_data()
@@ -148,38 +127,49 @@ elif st.session_state.page == "edit":
     if df.empty:
         st.info("Belum ada data.")
     else:
-        selected_nama = st.selectbox("Cari Nama Penduduk", df['Nama'].tolist())
-        selected_row = df[df['Nama'] == selected_nama].iloc[0]
+        st.markdown("### 🔍 Cari dan Pilih Nama untuk Diedit atau Dihapus")
+        nama_list = df['Nama'].tolist()
 
-        with st.form("form_edit"):
-            nama = st.text_input("Nama Lengkap", selected_row['Nama'])
-            nik = st.text_input("NIK", selected_row['NIK'])
-            kk = st.text_input("Nomor KK", selected_row['No KK'])
-            jk = st.selectbox("Jenis Kelamin", ["Laki-laki", "Perempuan"], index=["Laki-laki", "Perempuan"].index(selected_row['Jenis Kelamin']))
-            tempat = st.text_input("Tempat Lahir", selected_row['Tempat Lahir'])
-            tgl = st.date_input("Tanggal Lahir", pd.to_datetime(selected_row['Tanggal Lahir']))
-            status = st.selectbox("Status Perkawinan", ["Belum Kawin", "Kawin", "Cerai Hidup", "Cerai Mati"], index=["Belum Kawin", "Kawin", "Cerai Hidup", "Cerai Mati"].index(selected_row['Status Perkawinan']))
-            agama = st.selectbox("Agama", ["Islam", "Kristen", "Katolik", "Hindu", "Budha", "Khonghucu", "Lainnya"], index=["Islam", "Kristen", "Katolik", "Hindu", "Budha", "Khonghucu", "Lainnya"].index(selected_row['Agama']))
-            pendidikan = st.selectbox("Pendidikan Terakhir", ["Tidak Sekolah", "SD", "SMP", "SMA", "D1", "D3", "S1", "S2", "S3"], index=["Tidak Sekolah", "SD", "SMP", "SMA", "D1", "D3", "S1", "S2", "S3"].index(selected_row['Pendidikan']))
-            pekerjaan = st.text_input("Pekerjaan", selected_row['Pekerjaan'])
-            rt = st.selectbox("RT", [f"RT 0{i+1}" for i in range(7)], index=[f"RT 0{i+1}" for i in range(7)].index(selected_row['RT']))
-            alamat = st.text_area("Alamat Lengkap", selected_row['Alamat'])
+        selected_nama = st.selectbox("Pilih Nama", nama_list)
+        selected_data = df[df['Nama'] == selected_nama]
 
-            col1, col2 = st.columns(2)
-            update = col1.form_submit_button("✏️ Update")
-            delete = col2.form_submit_button("🗑️ Hapus")
+        if not selected_data.empty:
+            selected_row = selected_data.iloc[0]
 
-            if update:
-                df.loc[df['Nama'] == selected_nama] = [
-                    nama, nik, kk, jk, tempat, tgl.strftime("%Y-%m-%d"),
-                    status, agama, pendidikan, pekerjaan, rt, "RW 01", alamat
-                ]
-                save_data(df)
-                st.success("✅ Data berhasil diperbarui!")
+            with st.form("form_edit"):
+                nama = st.text_input("Nama Lengkap", selected_row['Nama'])
+                nik = st.text_input("NIK", selected_row['NIK'])
+                kk = st.text_input("Nomor KK", selected_row['No KK'])
+                jk = st.selectbox("Jenis Kelamin", ["Laki-laki", "Perempuan"],
+                                  index=["Laki-laki", "Perempuan"].index(selected_row['Jenis Kelamin']))
+                tempat = st.text_input("Tempat Lahir", selected_row['Tempat Lahir'])
+                tgl = st.date_input("Tanggal Lahir", pd.to_datetime(selected_row['Tanggal Lahir']))
+                status = st.selectbox("Status Perkawinan", ["Belum Kawin", "Kawin", "Cerai Hidup", "Cerai Mati"],
+                                      index=["Belum Kawin", "Kawin", "Cerai Hidup", "Cerai Mati"].index(selected_row['Status Perkawinan']))
+                agama = st.selectbox("Agama", ["Islam", "Kristen", "Katolik", "Hindu", "Budha", "Khonghucu", "Lainnya"],
+                                     index=["Islam", "Kristen", "Katolik", "Hindu", "Budha", "Khonghucu", "Lainnya"].index(selected_row['Agama']))
+                pendidikan = st.selectbox("Pendidikan Terakhir", ["Tidak Sekolah", "SD", "SMP", "SMA", "D1", "D3", "S1", "S2", "S3"],
+                                          index=["Tidak Sekolah", "SD", "SMP", "SMA", "D1", "D3", "S1", "S2", "S3"].index(selected_row['Pendidikan']))
+                pekerjaan = st.text_input("Pekerjaan", selected_row['Pekerjaan'])
+                rt = st.selectbox("RT", [f"RT 0{i+1}" for i in range(7)],
+                                  index=[f"RT 0{i+1}" for i in range(7)].index(selected_row['RT']))
+                alamat = st.text_area("Alamat Lengkap", selected_row['Alamat'])
 
-            if delete:
-                df = df[df['Nama'] != selected_nama]
-                save_data(df)
-                st.warning("🗑️ Data berhasil dihapus!")
+                col1, col2 = st.columns(2)
+                update = col1.form_submit_button("✏️ Update")
+                delete = col2.form_submit_button("🗑️ Hapus")
+
+                if update:
+                    df.loc[df['Nama'] == selected_nama] = [
+                        nama, nik, kk, jk, tempat, tgl.strftime("%Y-%m-%d"),
+                        status, agama, pendidikan, pekerjaan, rt, "RW 01", alamat
+                    ]
+                    save_data(df)
+                    st.success("✅ Data berhasil diperbarui!")
+
+                if delete:
+                    df = df[df['Nama'] != selected_nama]
+                    save_data(df)
+                    st.warning("🗑️ Data berhasil dihapus!")
 
     st.button("⬅️ Kembali ke Menu", on_click=lambda: st.session_state.update({"page": "home"}))
