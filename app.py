@@ -2,9 +2,12 @@ import streamlit as st
 import pandas as pd
 import datetime
 import os
+import pytz
+from datetime import datetime
 
 DATA_FILE = 'data_penduduk.csv'
 
+# Load dan simpan data
 def load_data():
     if os.path.exists(DATA_FILE):
         return pd.read_csv(DATA_FILE)
@@ -20,22 +23,40 @@ def load_data():
 def save_data(df):
     df.to_csv(DATA_FILE, index=False)
 
-# -------------------------
-# Setup Layout dan Page
-# -------------------------
+# Fungsi waktu real-time
+def waktu_sekarang():
+    tz = pytz.timezone('Asia/Jakarta')
+    now = datetime.now(tz)
+    return now.strftime('%A, %-d %B %Y • %H:%M WIB') \
+        .replace("Monday", "Senin").replace("Tuesday", "Selasa") \
+        .replace("Wednesday", "Rabu").replace("Thursday", "Kamis") \
+        .replace("Friday", "Jumat").replace("Saturday", "Sabtu") \
+        .replace("Sunday", "Minggu") \
+        .replace("January", "Januari").replace("February", "Februari") \
+        .replace("March", "Maret").replace("April", "April") \
+        .replace("May", "Mei").replace("June", "Juni") \
+        .replace("July", "Juli").replace("August", "Agustus") \
+        .replace("September", "September").replace("October", "Oktober") \
+        .replace("November", "November").replace("December", "Desember")
+
+# Setup tampilan
 st.set_page_config(page_title="Data Kependudukan", layout="centered")
 
 if "page" not in st.session_state:
     st.session_state.page = "home"
 
-# -------------------------
-# Tampilan HOME MENU
-# -------------------------
+# -------------------------------
+# HALAMAN MENU UTAMA
+# -------------------------------
 if st.session_state.page == "home":
-    st.markdown("<h1 style='text-align:center;'>📱 Data Kependudukan</h1>", unsafe_allow_html=True)
-    st.markdown("<h3 style='text-align:center;'>Dusun Klotok, Desa Simogirang</h3>", unsafe_allow_html=True)
+    st.markdown("""
+        <div style="text-align:center; background-color:#e7f0fa; padding: 20px; border-radius: 12px;">
+            <h1 style="color:#0b5394;">📱 Data Kependudukan</h1>
+            <h3 style="margin-top:-10px;">Dusun Klotok, Desa Simogirang</h3>
+            <p style="font-size:16px; color:#444;">""" + waktu_sekarang() + """</p>
+        </div>
+        """, unsafe_allow_html=True)
 
-    st.markdown("---")
     st.markdown("## 📋 Pilih Menu", unsafe_allow_html=True)
 
     col1, col2 = st.columns(2)
@@ -55,20 +76,20 @@ if st.session_state.page == "home":
             st.session_state.page = "home"
 
     st.markdown("---")
-    st.markdown("<p style='text-align:center;'>rt.1/rw.2</p>", unsafe_allow_html=True)
+    st.markdown("<p style='text-align:center; font-size:15px; color:#777;'>RT. 1 / RW. 2</p>", unsafe_allow_html=True)
 
-# -------------------------
-# LIHAT DATA
-# -------------------------
+# -------------------------------
+# HALAMAN LIHAT DATA
+# -------------------------------
 elif st.session_state.page == "lihat":
     st.header("📄 Lihat Data Penduduk")
     df = load_data()
     st.dataframe(df, use_container_width=True)
     st.button("⬅️ Kembali ke Menu", on_click=lambda: st.session_state.update({"page": "home"}))
 
-# -------------------------
-# INPUT DATA
-# -------------------------
+# -------------------------------
+# HALAMAN INPUT DATA
+# -------------------------------
 elif st.session_state.page == "input":
     st.header("➕ Input Data Baru")
     df = load_data()
@@ -111,9 +132,9 @@ elif st.session_state.page == "input":
 
     st.button("⬅️ Kembali ke Menu", on_click=lambda: st.session_state.update({"page": "home"}))
 
-# -------------------------
-# EDIT DATA
-# -------------------------
+# -------------------------------
+# HALAMAN EDIT DATA
+# -------------------------------
 elif st.session_state.page == "edit":
     st.header("✏️ Edit / Hapus Data")
     df = load_data()
