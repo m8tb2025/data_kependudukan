@@ -1,19 +1,16 @@
 import streamlit as st
 import pandas as pd
-import os
 from datetime import datetime
 
 DATA_FILE = 'data_penduduk.csv'
 
 def load_data():
-    if os.path.exists(DATA_FILE):
-        return pd.read_csv(DATA_FILE)
-    else:
-        return pd.DataFrame(columns=[
-            'Nama', 'NIK', 'No KK', 'Jenis Kelamin', 'Tempat Lahir', 'Tanggal Lahir',
-            'Status Perkawinan', 'Agama', 'Pendidikan', 'Pekerjaan', 'Golongan Darah',
-            'Nama Ayah', 'Nama Ibu', 'RT', 'RW', 'Alamat', 'No HP'
-        ])
+    if DATA_FILE:
+        try:
+            return pd.read_csv(DATA_FILE)
+        except:
+            return pd.DataFrame()
+    return pd.DataFrame()
 
 def save_data(df):
     df.to_csv(DATA_FILE, index=False)
@@ -41,28 +38,29 @@ with st.form("form_input"):
     hp = st.text_input("No HP")
 
     simpan = st.form_submit_button("✅ Simpan")
-
     if simpan:
-        new_data = {
-            'Nama': nama,
-            'NIK': nik,
-            'No KK': kk,
-            'Jenis Kelamin': jk,
-            'Tempat Lahir': tempat,
-            'Tanggal Lahir': tgl.strftime("%d/%m/%Y"),
-            'Status Perkawinan': status,
-            'Agama': agama,
-            'Pendidikan': pendidikan,
-            'Pekerjaan': pekerjaan,
-            'Golongan Darah': goldar,
-            'Nama Ayah': ayah,
-            'Nama Ibu': ibu,
-            'RT': rt,
-            'RW': "RW 01",
-            'Alamat': alamat,
-            'No HP': hp
-        }
-
-        df = pd.concat([df, pd.DataFrame([new_data])], ignore_index=True)
-        save_data(df)
-        st.success("✅ Data berhasil disimpan!")
+        if not nama or not nik or not kk:
+            st.error("Nama, NIK, dan No KK wajib diisi.")
+        else:
+            new_data = {
+                'Nama': nama,
+                'NIK': nik,
+                'No KK': kk,
+                'Jenis Kelamin': jk,
+                'Tempat Lahir': tempat,
+                'Tanggal Lahir': tgl.strftime("%d/%m/%Y"),
+                'Status Perkawinan': status,
+                'Agama': agama,
+                'Pendidikan': pendidikan,
+                'Pekerjaan': pekerjaan,
+                'Golongan Darah': goldar,
+                'Nama Ayah': ayah,
+                'Nama Ibu': ibu,
+                'RT': rt,
+                'RW': "RW 01",
+                'Alamat': alamat,
+                'No HP': hp
+            }
+            df = pd.concat([df, pd.DataFrame([new_data])], ignore_index=True)
+            save_data(df)
+            st.success("✅ Data berhasil disimpan!")
