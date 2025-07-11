@@ -99,24 +99,31 @@ elif st.session_state.page == "input":
 
         simpan = st.form_submit_button("✅ Simpan")
         if simpan:
-            new_data = {
-                'Nama': nama,
-                'NIK': nik,
-                'No KK': kk,
-                'Jenis Kelamin': jk,
-                'Tempat Lahir': tempat,
-                'Tanggal Lahir': tgl.strftime("%Y-%m-%d"),
-                'Status Perkawinan': status,
-                'Agama': agama,
-                'Pendidikan': pendidikan,
-                'Pekerjaan': pekerjaan,
-                'RT': rt,
-                'RW': rw,
-                'Alamat': alamat
-            }
-            df = pd.concat([df, pd.DataFrame([new_data])], ignore_index=True)
-            save_data(df)
-            st.success("✅ Data berhasil disimpan!")
+            if not nik.isdigit() or len(nik) != 16:
+                st.error("❌ NIK harus terdiri dari 16 digit angka.")
+            elif not kk.isdigit() or len(kk) != 16:
+                st.error("❌ Nomor KK harus terdiri dari 16 digit angka.")
+            elif nik in df['NIK'].astype(str).values:
+                st.error("❌ NIK sudah terdaftar. Gunakan NIK lain atau edit data yang sudah ada.")
+            else:
+                new_data = {
+                    'Nama': nama,
+                    'NIK': nik,
+                    'No KK': kk,
+                    'Jenis Kelamin': jk,
+                    'Tempat Lahir': tempat,
+                    'Tanggal Lahir': tgl.strftime("%Y-%m-%d"),
+                    'Status Perkawinan': status,
+                    'Agama': agama,
+                    'Pendidikan': pendidikan,
+                    'Pekerjaan': pekerjaan,
+                    'RT': rt,
+                    'RW': rw,
+                    'Alamat': alamat
+                }
+                df = pd.concat([df, pd.DataFrame([new_data])], ignore_index=True)
+                save_data(df)
+                st.success("✅ Data berhasil disimpan!")
 
     st.button("⬅️ Kembali ke Menu", on_click=lambda: st.session_state.update({"page": "home"}))
 
