@@ -133,7 +133,9 @@ elif st.session_state.page == "edit":
         st.info("Belum ada data.")
     else:
         nama_list = df['Nama'].dropna().unique().tolist()
-        selected_nama = st.selectbox("🔍 Pilih Nama", nama_list)
+        nama_input = st.text_input("🔍 Cari Nama")
+        filtered_nama = [n for n in nama_list if nama_input.lower() in n.lower()]
+        selected_nama = st.selectbox("Pilih Nama", filtered_nama if filtered_nama else ["(Tidak ditemukan)"])
         selected_data = df[df['Nama'] == selected_nama]
 
         if not selected_data.empty:
