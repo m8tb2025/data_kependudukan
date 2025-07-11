@@ -149,9 +149,12 @@ elif st.session_state.page == "edit":
                 jk = st.selectbox("Jenis Kelamin", ["Laki-laki", "Perempuan"],
                                   index=["Laki-laki", "Perempuan"].index(selected_row['Jenis Kelamin']))
                 tempat = st.text_input("Tempat Lahir", selected_row['Tempat Lahir'])
+                tgl_lahir_str = selected_row['Tanggal Lahir']
+tgl_lahir = datetime.datetime.strptime(tgl_lahir_str, "%d/%m/%Y").date()
+
                 tgl = st.date_input(
                     "Tanggal Lahir",
-                    value=pd.to_datetime(selected_row['Tanggal Lahir']).date(),
+                    value=tgl_lahir,
                     min_value=datetime.date(1950, 1, 1),
                     max_value=datetime.date.today()
                 )
