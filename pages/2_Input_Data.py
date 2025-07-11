@@ -1,16 +1,23 @@
 import streamlit as st
 import pandas as pd
-from datetime import datetime
+import datetime
+import os
 
 DATA_FILE = 'data_penduduk.csv'
 
 def load_data():
-    if DATA_FILE:
+    if os.path.exists(DATA_FILE):
         try:
             return pd.read_csv(DATA_FILE)
-        except:
+        except Exception as e:
+            st.error(f"Gagal memuat data: {e}")
             return pd.DataFrame()
-    return pd.DataFrame()
+    else:
+        return pd.DataFrame(columns=[
+            'Nama', 'NIK', 'No KK', 'Jenis Kelamin', 'Tempat Lahir', 'Tanggal Lahir',
+            'Status Perkawinan', 'Agama', 'Pendidikan', 'Pekerjaan', 'Golongan Darah',
+            'Nama Ayah', 'Nama Ibu', 'RT', 'RW', 'Alamat', 'No HP'
+        ])
 
 def save_data(df):
     df.to_csv(DATA_FILE, index=False)
@@ -25,7 +32,11 @@ with st.form("form_input"):
     kk = st.text_input("No KK")
     jk = st.selectbox("Jenis Kelamin", ["Laki-laki", "Perempuan"])
     tempat = st.text_input("Tempat Lahir")
-    tgl = st.date_input("Tanggal Lahir", datetime(1990, 1, 1), format="DD/MM/YYYY")
+    
+    # Gunakan datetime.date() dari modul datetime (bukan dari datetime.datetime)
+    default_date = datetime.date(1990, 1, 1)
+    tgl = st.date_input("Tanggal Lahir", value=default_date, format="DD/MM/YYYY")
+    
     status = st.selectbox("Status Perkawinan", ["Belum Kawin", "Kawin", "Cerai Hidup", "Cerai Mati"])
     agama = st.selectbox("Agama", ["Islam", "Kristen", "Katolik", "Hindu", "Budha", "Khonghucu", "Lainnya"])
     pendidikan = st.selectbox("Pendidikan", ["Tidak Sekolah", "SD", "SMP", "SMA", "D1", "D3", "S1", "S2", "S3"])
@@ -61,6 +72,7 @@ with st.form("form_input"):
                 'Alamat': alamat,
                 'No HP': hp
             }
+
             df = pd.concat([df, pd.DataFrame([new_data])], ignore_index=True)
             save_data(df)
             st.success("✅ Data berhasil disimpan!")
