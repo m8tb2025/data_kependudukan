@@ -6,7 +6,11 @@ DATA_FILE = 'data_penduduk.csv'
 
 def load_data():
     if os.path.exists(DATA_FILE):
-        return pd.read_csv(DATA_FILE)
+        try:
+            return pd.read_csv(DATA_FILE)
+        except Exception as e:
+            st.error(f"Gagal memuat data: {e}")
+            return pd.DataFrame()
     else:
         return pd.DataFrame(columns=[
             'Nama', 'NIK', 'No KK', 'Jenis Kelamin', 'Tempat Lahir', 'Tanggal Lahir',
@@ -14,7 +18,10 @@ def load_data():
             'Nama Ayah', 'Nama Ibu', 'RT', 'RW', 'Alamat', 'No HP'
         ])
 
+# Judul halaman
 st.header("📄 Lihat Data Penduduk")
+
+# Load dan tampilkan data
 df = load_data()
 
 if df.empty:
@@ -22,8 +29,9 @@ if df.empty:
 else:
     st.dataframe(df, use_container_width=True)
 
+# Tombol unduh CSV
 st.download_button(
-    "⬇️ Unduh Data CSV",
+    label="⬇️ Unduh Data CSV",
     data=df.to_csv(index=False),
     file_name="data_penduduk.csv",
     mime="text/csv"
