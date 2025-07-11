@@ -3,7 +3,6 @@ import pandas as pd
 import datetime
 import os
 import pytz
-from datetime import datetime
 
 DATA_FILE = 'data_penduduk.csv'
 
@@ -24,7 +23,7 @@ def save_data(df):
 
 def waktu_sekarang():
     tz = pytz.timezone('Asia/Jakarta')
-    now = datetime.now(tz)
+    now = datetime.datetime.now(tz)
     return now.strftime('%A, %-d %B %Y • %H:%M WIB') \
         .replace("Monday", "Senin").replace("Tuesday", "Selasa") \
         .replace("Wednesday", "Rabu").replace("Thursday", "Kamis") \
