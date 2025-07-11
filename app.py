@@ -13,7 +13,7 @@ def load_data():
         df = pd.DataFrame(columns=[
             'Nama', 'NIK', 'No KK', 'Jenis Kelamin', 'Tempat Lahir',
             'Tanggal Lahir', 'Status Perkawinan', 'Agama', 'Pendidikan',
-            'Pekerjaan', 'RT', 'RW', 'Alamat'
+            'Pekerjaan', 'RT', 'RW', 'Alamat', 'No HP'
         ])
         df.to_csv(DATA_FILE, index=False)
         return df
@@ -75,6 +75,16 @@ elif st.session_state.page == "lihat":
     st.header("📄 Lihat Data Penduduk")
     df = load_data()
     st.dataframe(df, use_container_width=True)
+
+    # Tombol Unduh CSV
+    csv = df.to_csv(index=False).encode('utf-8')
+    st.download_button(
+        label="⬇️ Unduh Data CSV",
+        data=csv,
+        file_name='data_penduduk.csv',
+        mime='text/csv'
+    )
+
     st.button("⬅️ Kembali ke Menu", on_click=lambda: st.session_state.update({"page": "home"}))
 
 elif st.session_state.page == "input":
@@ -97,6 +107,7 @@ elif st.session_state.page == "input":
         agama = st.selectbox("Agama", ["Islam", "Kristen", "Katolik", "Hindu", "Budha", "Khonghucu", "Lainnya"])
         pendidikan = st.selectbox("Pendidikan Terakhir", ["Tidak Sekolah", "SD", "SMP", "SMA", "D1", "D3", "S1", "S2", "S3"])
         pekerjaan = st.text_input("Pekerjaan")
+        hp = st.text_input("Nomor Telepon / HP")  # NEW
         rt = st.selectbox("RT", [f"RT 0{i+1}" for i in range(7)])
         rw = "RW 01"
         alamat = st.text_area("Alamat Lengkap", "Dusun Klotok")
@@ -123,7 +134,8 @@ elif st.session_state.page == "input":
                     'Pekerjaan': pekerjaan,
                     'RT': rt,
                     'RW': rw,
-                    'Alamat': alamat
+                    'Alamat': alamat,
+                    'No HP': hp
                 }
                 df = pd.concat([df, pd.DataFrame([new_data])], ignore_index=True)
                 save_data(df)
@@ -147,12 +159,10 @@ elif st.session_state.page == "edit":
         if not selected_data.empty:
             selected_row = selected_data.iloc[0]
 
-            # konversi dd/mm/yyyy ke datetime.date
             try:
-                tgl_lahir_str = selected_row['Tanggal Lahir']
-                tgl_lahir = datetime.datetime.strptime(tgl_lahir_str, "%d/%m/%Y").date()
+                tgl_lahir = datetime.datetime.strptime(selected_row['Tanggal Lahir'], "%d/%m/%Y").date()
             except:
-                tgl_lahir = datetime.date(1990, 1, 1)  # fallback kalau gagal
+                tgl_lahir = datetime.date(1990, 1, 1)
 
             with st.form("form_edit"):
                 nama = st.text_input("Nama Lengkap", selected_row['Nama'])
@@ -174,6 +184,7 @@ elif st.session_state.page == "edit":
                 pendidikan = st.selectbox("Pendidikan Terakhir", ["Tidak Sekolah", "SD", "SMP", "SMA", "D1", "D3", "S1", "S2", "S3"],
                                           index=["Tidak Sekolah", "SD", "SMP", "SMA", "D1", "D3", "S1", "S2", "S3"].index(selected_row['Pendidikan']))
                 pekerjaan = st.text_input("Pekerjaan", selected_row['Pekerjaan'])
+                hp = st.text_input("Nomor Telepon / HP", selected_row['No HP'])
                 rt = st.selectbox("RT", [f"RT 0{i+1}" for i in range(7)],
                                   index=[f"RT 0{i+1}" for i in range(7)].index(selected_row['RT']))
                 alamat = st.text_area("Alamat Lengkap", selected_row['Alamat'])
@@ -185,7 +196,7 @@ elif st.session_state.page == "edit":
                 if update:
                     df.loc[df['Nama'] == selected_nama] = [
                         nama, nik, kk, jk, tempat, tgl.strftime("%d/%m/%Y"),
-                        status, agama, pendidikan, pekerjaan, rt, "RW 01", alamat
+                        status, agama, pendidikan, pekerjaan, rt, "RW 01", alamat, hp
                     ]
                     save_data(df)
                     st.success("✅ Data berhasil diperbarui!")
