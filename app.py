@@ -11,7 +11,7 @@ st.set_page_config(page_title="Aplikasi Data Kependudukan", layout="centered")
 
 st.markdown("""
     <div style="text-align:center; background-color:#e7f0fa; padding: 20px; border-radius: 12px;">
-        <h1 style="color:#0b5394; font-weight:bold; text-transform:uppercase;">📊 DASHBOARD KEPENDUDUKAN</h1>
+        <h1 style="color:#0b5394; font-weight:bold; text-transform:uppercase;">📊 APLIKASI DATA KEPENDUDUKAN</h1>
         <h3 style="margin-top:-10px; color:#000000; font-weight:bold;">Dusun Klotok, Desa Simogirang</h3>
         <p style="font-size:16px; color:#444;">""" + waktu_sekarang() + """</p>
     </div>
