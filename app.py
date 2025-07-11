@@ -87,7 +87,12 @@ elif st.session_state.page == "input":
         kk = st.text_input("Nomor KK")
         jk = st.selectbox("Jenis Kelamin", ["Laki-laki", "Perempuan"])
         tempat = st.text_input("Tempat Lahir")
-        tgl = st.date_input("Tanggal Lahir", datetime.date(1990, 1, 1))
+        tgl = st.date_input(
+            "Tanggal Lahir",
+            value=datetime.date(1990, 1, 1),
+            min_value=datetime.date(1950, 1, 1),
+            max_value=datetime.date.today()
+        )
         status = st.selectbox("Status Perkawinan", ["Belum Kawin", "Kawin", "Cerai Hidup", "Cerai Mati"])
         agama = st.selectbox("Agama", ["Islam", "Kristen", "Katolik", "Hindu", "Budha", "Khonghucu", "Lainnya"])
         pendidikan = st.selectbox("Pendidikan Terakhir", ["Tidak Sekolah", "SD", "SMP", "SMA", "D1", "D3", "S1", "S2", "S3"])
@@ -142,6 +147,13 @@ elif st.session_state.page == "edit":
         if not selected_data.empty:
             selected_row = selected_data.iloc[0]
 
+            # konversi dd/mm/yyyy ke datetime.date
+            try:
+                tgl_lahir_str = selected_row['Tanggal Lahir']
+                tgl_lahir = datetime.datetime.strptime(tgl_lahir_str, "%d/%m/%Y").date()
+            except:
+                tgl_lahir = datetime.date(1990, 1, 1)  # fallback kalau gagal
+
             with st.form("form_edit"):
                 nama = st.text_input("Nama Lengkap", selected_row['Nama'])
                 nik = st.text_input("NIK", selected_row['NIK'])
@@ -149,9 +161,6 @@ elif st.session_state.page == "edit":
                 jk = st.selectbox("Jenis Kelamin", ["Laki-laki", "Perempuan"],
                                   index=["Laki-laki", "Perempuan"].index(selected_row['Jenis Kelamin']))
                 tempat = st.text_input("Tempat Lahir", selected_row['Tempat Lahir'])
-                tgl_lahir_str = selected_row['Tanggal Lahir']
-tgl_lahir = datetime.datetime.strptime(tgl_lahir_str, "%d/%m/%Y").date()
-
                 tgl = st.date_input(
                     "Tanggal Lahir",
                     value=tgl_lahir,
@@ -175,7 +184,7 @@ tgl_lahir = datetime.datetime.strptime(tgl_lahir_str, "%d/%m/%Y").date()
 
                 if update:
                     df.loc[df['Nama'] == selected_nama] = [
-                        nama, nik, kk, jk, tempat, tgl.strftime("%Y-%m-%d"),
+                        nama, nik, kk, jk, tempat, tgl.strftime("%d/%m/%Y"),
                         status, agama, pendidikan, pekerjaan, rt, "RW 01", alamat
                     ]
                     save_data(df)
