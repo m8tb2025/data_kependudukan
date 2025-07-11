@@ -111,7 +111,7 @@ elif st.session_state.page == "input":
                     'No KK': kk,
                     'Jenis Kelamin': jk,
                     'Tempat Lahir': tempat,
-                    'Tanggal Lahir': tgl.strftime("%Y-%m-%d"),
+                    'Tanggal Lahir': tgl.strftime("%d/%m/%Y"),
                     'Status Perkawinan': status,
                     'Agama': agama,
                     'Pendidikan': pendidikan,
