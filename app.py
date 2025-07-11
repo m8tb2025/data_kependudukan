@@ -1,12 +1,14 @@
 import streamlit as st
 import pandas as pd
-import datetime
 import os
+from datetime import datetime, date
 import pytz
-from datetime import datetime
 
 DATA_FILE = 'data_penduduk.csv'
 
+# ------------------------
+# Fungsi Data Handling
+# ------------------------
 def load_data():
     if os.path.exists(DATA_FILE):
         return pd.read_csv(DATA_FILE)
@@ -27,8 +29,10 @@ def waktu_sekarang():
     now = datetime.now(tz)
     return now.strftime('%A, %-d %B %Y • %H:%M WIB')
 
+# ------------------------
+# Konfigurasi Streamlit
+# ------------------------
 st.set_page_config(page_title="Data Kependudukan", layout="centered")
-
 if "page" not in st.session_state:
     st.session_state.page = "home"
 
@@ -36,15 +40,16 @@ if "page" not in st.session_state:
 # Halaman Utama
 # ------------------------
 if st.session_state.page == "home":
-    st.markdown(f"""
+    st.markdown("""
         <div style="text-align:center; background-color:#e7f0fa; padding: 20px; border-radius: 12px;">
             <h1 style="color:#0b5394; font-weight:bold; text-transform:uppercase;">📱 DATA KEPENDUDUKAN</h1>
             <h3 style="margin-top:-10px; color:#000000; font-weight:bold;">Dusun Klotok, Desa Simogirang</h3>
-            <p style="font-size:16px; color:#444;">{waktu_sekarang()}</p>
+            <p style="font-size:16px; color:#444;">""" + waktu_sekarang() + """</p>
         </div>
     """, unsafe_allow_html=True)
 
     st.markdown("## 📋 Pilih Menu", unsafe_allow_html=True)
+
     col1, col2 = st.columns(2)
     with col1:
         if st.button("📄 Lihat Data", use_container_width=True):
@@ -61,7 +66,7 @@ if st.session_state.page == "home":
         st.download_button("⬇️ Unduh Data CSV", load_data().to_csv(index=False), file_name='data_penduduk.csv')
 
 # ------------------------
-# Halaman Lihat
+# Halaman Lihat Data
 # ------------------------
 elif st.session_state.page == "lihat":
     st.header("📄 Lihat Data Penduduk")
@@ -77,28 +82,24 @@ elif st.session_state.page == "input":
     df = load_data()
 
     with st.form("form_input"):
-        col1, col2 = st.columns(2)
-        with col1:
-            nama = st.text_input("Nama")
-            nik = st.text_input("NIK")
-            kk = st.text_input("No KK")
-            jk = st.selectbox("Jenis Kelamin", ["Laki-laki", "Perempuan"])
-            tempat = st.text_input("Tempat Lahir")
-            tgl = st.date_input("Tanggal Lahir", datetime.date(1990, 1, 1), format="DD/MM/YYYY")
-            status = st.selectbox("Status Perkawinan", ["Belum Kawin", "Kawin", "Cerai Hidup", "Cerai Mati"])
-            agama = st.selectbox("Agama", ["Islam", "Kristen", "Katolik", "Hindu", "Budha", "Khonghucu", "Lainnya"])
-        with col2:
-            pendidikan = st.selectbox("Pendidikan", ["Tidak Sekolah", "SD", "SMP", "SMA", "D1", "D3", "S1", "S2", "S3"])
-            pekerjaan = st.text_input("Pekerjaan")
-            goldar = st.selectbox("Golongan Darah", ["A", "B", "AB", "O", "-", "Tidak Tahu"])
-            ayah = st.text_input("Nama Ayah")
-            ibu = st.text_input("Nama Ibu")
-            rt = st.selectbox("RT", [f"RT 0{i+1}" for i in range(7)])
-            alamat = st.text_area("Alamat")
-            hp = st.text_input("No HP")
+        nama = st.text_input("Nama")
+        nik = st.text_input("NIK")
+        kk = st.text_input("No KK")
+        jk = st.selectbox("Jenis Kelamin", ["Laki-laki", "Perempuan"])
+        tempat = st.text_input("Tempat Lahir")
+        tgl = st.date_input("Tanggal Lahir", date(1990, 1, 1), format="DD/MM/YYYY")
+        status = st.selectbox("Status Perkawinan", ["Belum Kawin", "Kawin", "Cerai Hidup", "Cerai Mati"])
+        agama = st.selectbox("Agama", ["Islam", "Kristen", "Katolik", "Hindu", "Budha", "Khonghucu", "Lainnya"])
+        pendidikan = st.selectbox("Pendidikan", ["Tidak Sekolah", "SD", "SMP", "SMA", "D1", "D3", "S1", "S2", "S3"])
+        pekerjaan = st.text_input("Pekerjaan")
+        goldar = st.selectbox("Golongan Darah", ["A", "B", "AB", "O", "-", "Tidak Tahu"])
+        ayah = st.text_input("Nama Ayah")
+        ibu = st.text_input("Nama Ibu")
+        rt = st.selectbox("RT", [f"RT 0{i+1}" for i in range(7)])
+        alamat = st.text_area("Alamat")
+        hp = st.text_input("No HP")
 
         simpan = st.form_submit_button("✅ Simpan")
-
         if simpan:
             new_data = {
                 'Nama': nama,
@@ -148,13 +149,14 @@ elif st.session_state.page == "edit":
             if not selected_data.empty:
                 selected_row = selected_data.iloc[0]
                 tgl_str = selected_row.get("Tanggal Lahir", "01/01/1990")
+
                 try:
-                    tgl_lahir = datetime.strptime(tgl_str, "%d/%m/%Y")
+                    tgl_lahir = datetime.strptime(tgl_str, "%d/%m/%Y").date()
                 except:
                     try:
-                        tgl_lahir = datetime.strptime(tgl_str, "%Y-%m-%d")
+                        tgl_lahir = datetime.strptime(tgl_str, "%Y-%m-%d").date()
                     except:
-                        tgl_lahir = datetime(1990, 1, 1)
+                        tgl_lahir = date(1990, 1, 1)
 
                 with st.form("form_edit"):
                     nama = st.text_input("Nama", selected_row.get('Nama', ''))
