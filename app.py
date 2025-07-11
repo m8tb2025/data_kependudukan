@@ -96,7 +96,12 @@ elif st.session_state.page == "input":
         kk = st.text_input("No KK")
         jk = st.selectbox("Jenis Kelamin", ["Laki-laki", "Perempuan"])
         tempat = st.text_input("Tempat Lahir")
-        tgl = st.date_input("Tanggal Lahir", min_value=datetime(1950,1,1), format="DD/MM/YYYY")
+        tgl_str = selected_row.get('Tanggal Lahir', '01/01/1990')
+        try:
+            tgl_date = datetime.strptime(tgl_str, "%d/%m/%Y").date()
+        except:
+            tgl_date = datetime(1990, 1, 1).date()
+        tgl = st.date_input("Tanggal Lahir", value=tgl_date, format="DD/MM/YYYY")
         status = st.selectbox("Status Perkawinan", ["Belum Kawin", "Kawin", "Cerai Hidup", "Cerai Mati"])
         agama = st.selectbox("Agama", ["Islam", "Kristen", "Katolik", "Hindu", "Budha", "Khonghucu", "Lainnya"])
         pendidikan = st.selectbox("Pendidikan", ["Tidak Sekolah", "SD", "SMP", "SMA", "D1", "D3", "S1", "S2", "S3"])
