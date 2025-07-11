@@ -7,7 +7,7 @@ def waktu_sekarang():
     now = datetime.now(tz)
     return now.strftime('%A, %-d %B %Y • %H:%M WIB')
 
-st.set_page_config(page_title="Dashboard Kependudukan", layout="centered")
+st.set_page_config(page_title="Aplikasi Data Kependudukan", layout="centered")
 
 st.markdown("""
     <div style="text-align:center; background-color:#e7f0fa; padding: 20px; border-radius: 12px;">
@@ -17,5 +17,5 @@ st.markdown("""
     </div>
 """, unsafe_allow_html=True)
 
-st.markdown("## 📁 Menu Aplikasi Tersedia")
+st.markdown("## 📁 Menu Aplikasi")
 st.info("👈 Silakan pilih menu di sidebar untuk melihat, input, edit, unggah, atau cetak data.")
