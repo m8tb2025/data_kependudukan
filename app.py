@@ -6,9 +6,7 @@ import pytz
 
 DATA_FILE = 'data_penduduk.csv'
 
-# ------------------------
 # Fungsi Data Handling
-# ------------------------
 def load_data():
     if os.path.exists(DATA_FILE):
         return pd.read_csv(DATA_FILE)
@@ -29,26 +27,22 @@ def waktu_sekarang():
     now = datetime.now(tz)
     return now.strftime('%A, %-d %B %Y • %H:%M WIB')
 
-# ------------------------
 # Konfigurasi Streamlit
-# ------------------------
 st.set_page_config(page_title="Data Kependudukan", layout="centered")
 if "page" not in st.session_state:
     st.session_state.page = "home"
 
-# ------------------------
-# Halaman Utama
-# ------------------------
+# ---------------------- HALAMAN UTAMA -----------------------
 if st.session_state.page == "home":
-    st.markdown("""
+    st.markdown(f"""
         <div style="text-align:center; background-color:#e7f0fa; padding: 14px; border-radius: 12px;">
-            <h1 style="color:#0b5394; font-weight:bold; text-transform:uppercase;">📱 DATA KEPENDUDUKAN</h1>
-            <h3 style="margin-top:-10px; color:#000000; font-weight:bold;">Dusun Klotok, Desa Simogirang</h3>
-            <p style="font-size:18px; color:#444;">""" + waktu_sekarang() + """</p>
+            <h1 style="color:#0b5394; font-weight:bold;">📱 DATA KEPENDUDUKAN</h1>
+            <h3 style="margin-top:-10px; color:#000;">Dusun Klotok, Desa Simogirang</h3>
+            <p style="font-size:16px; color:#444;">{waktu_sekarang()}</p>
         </div>
     """, unsafe_allow_html=True)
 
-    st.markdown("## 📋 Pilih Menu", unsafe_allow_html=True)
+    st.markdown("## 📋 Pilih Menu")
 
     col1, col2 = st.columns(2)
     with col1:
@@ -63,20 +57,22 @@ if st.session_state.page == "home":
         if st.button("✏️ Edit / Hapus", use_container_width=True):
             st.session_state.page = "edit"
     with col4:
-        st.download_button("⬇️ Unduh Data CSV", load_data().to_csv(index=False), file_name='data_penduduk.csv')
+        if st.button("📤 Import Excel", use_container_width=True):
+            st.session_state.page = "import"
 
-# ------------------------
-# Halaman Lihat Data
-# ------------------------
+    st.download_button("⬇️ Unduh Data CSV", load_data().to_csv(index=False), file_name='data_penduduk.csv')
+
+# ---------------------- LIHAT DATA -----------------------
 elif st.session_state.page == "lihat":
     st.header("📄 Lihat Data Penduduk")
     df = load_data()
-    st.dataframe(df, use_container_width=True)
+    if df.empty:
+        st.warning("Belum ada data.")
+    else:
+        st.dataframe(df, use_container_width=True)
     st.button("⬅️ Kembali ke Menu", on_click=lambda: st.session_state.update({"page": "home"}))
 
-# ------------------------
-# Halaman Input Data
-# ------------------------
+# ---------------------- INPUT DATA -----------------------
 elif st.session_state.page == "input":
     st.header("➕ Input Data Baru")
     df = load_data()
@@ -126,9 +122,7 @@ elif st.session_state.page == "input":
 
     st.button("⬅️ Kembali ke Menu", on_click=lambda: st.session_state.update({"page": "home"}))
 
-# ------------------------
-# Halaman Edit / Hapus
-# ------------------------
+# ---------------------- EDIT / HAPUS -----------------------
 elif st.session_state.page == "edit":
     st.header("✏️ Edit / Hapus Data")
     df = load_data()
@@ -145,74 +139,76 @@ elif st.session_state.page == "edit":
         else:
             selected_nama = st.selectbox("Pilih Nama", filtered_nama)
             selected_data = df[df['Nama'] == selected_nama]
+            selected_row = selected_data.iloc[0]
 
-            if not selected_data.empty:
-                selected_row = selected_data.iloc[0]
-                tgl_str = selected_row.get("Tanggal Lahir", "01/01/1990")
-
+            try:
+                tgl_lahir = datetime.strptime(selected_row['Tanggal Lahir'], "%d/%m/%Y").date()
+            except:
                 try:
-                    tgl_lahir = datetime.strptime(tgl_str, "%d/%m/%Y").date()
+                    tgl_lahir = datetime.strptime(selected_row['Tanggal Lahir'], "%Y-%m-%d").date()
                 except:
-                    try:
-                        tgl_lahir = datetime.strptime(tgl_str, "%Y-%m-%d").date()
-                    except:
-                        tgl_lahir = date(1990, 1, 1)
+                    tgl_lahir = date(1990, 1, 1)
 
-                with st.form("form_edit"):
-                    nama = st.text_input("Nama", selected_row.get('Nama', ''))
-                    nik = st.text_input("NIK", selected_row.get('NIK', ''))
-                    kk = st.text_input("No KK", selected_row.get('No KK', ''))
+            with st.form("form_edit"):
+                nama = st.text_input("Nama", selected_row['Nama'])
+                nik = st.text_input("NIK", selected_row['NIK'])
+                kk = st.text_input("No KK", selected_row['No KK'])
+                jk = st.selectbox("Jenis Kelamin", ["Laki-laki", "Perempuan"], index=0 if selected_row['Jenis Kelamin'] == "Laki-laki" else 1)
+                tempat = st.text_input("Tempat Lahir", selected_row['Tempat Lahir'])
+                tgl = st.date_input("Tanggal Lahir", tgl_lahir, format="DD/MM/YYYY")
+                status = st.selectbox("Status Perkawinan", ["Belum Kawin", "Kawin", "Cerai Hidup", "Cerai Mati"], index=0)
+                agama = st.selectbox("Agama", ["Islam", "Kristen", "Katolik", "Hindu", "Budha", "Khonghucu", "Lainnya"], index=0)
+                pendidikan = st.selectbox("Pendidikan", ["Tidak Sekolah", "SD", "SMP", "SMA", "D1", "D3", "S1", "S2", "S3"], index=0)
+                pekerjaan = st.text_input("Pekerjaan", selected_row['Pekerjaan'])
+                goldar = st.selectbox("Golongan Darah", ["A", "B", "AB", "O", "-", "Tidak Tahu"], index=0)
+                ayah = st.text_input("Nama Ayah", selected_row['Nama Ayah'])
+                ibu = st.text_input("Nama Ibu", selected_row['Nama Ibu'])
+                rt = st.selectbox("RT", [f"RT 0{i+1}" for i in range(7)], index=0)
+                alamat = st.text_area("Alamat", selected_row['Alamat'])
+                hp = st.text_input("No HP", selected_row['No HP'])
 
-                    jk_opts = ["Laki-laki", "Perempuan"]
-                    jk_val = selected_row.get('Jenis Kelamin', 'Laki-laki')
-                    jk = st.selectbox("Jenis Kelamin", jk_opts, index=jk_opts.index(jk_val.strip().capitalize()) if jk_val.strip().capitalize() in jk_opts else 0)
+                col1, col2 = st.columns(2)
+                update = col1.form_submit_button("✏️ Update")
+                delete = col2.form_submit_button("🗑️ Hapus")
 
-                    tempat = st.text_input("Tempat Lahir", selected_row.get('Tempat Lahir', ''))
-                    tgl = st.date_input("Tanggal Lahir", tgl_lahir, format="DD/MM/YYYY")
+                if update:
+                    df.loc[df['Nama'] == selected_nama] = [
+                        nama, nik, kk, jk, tempat, tgl.strftime("%d/%m/%Y"), status,
+                        agama, pendidikan, pekerjaan, goldar, ayah, ibu, rt, "RW 01", alamat, hp
+                    ]
+                    save_data(df)
+                    st.success("✅ Data berhasil diperbarui!")
 
-                    status_opts = ["Belum Kawin", "Kawin", "Cerai Hidup", "Cerai Mati"]
-                    status_val = selected_row.get('Status Perkawinan', 'Belum Kawin')
-                    status = st.selectbox("Status Perkawinan", status_opts, index=status_opts.index(status_val) if status_val in status_opts else 0)
+                if delete:
+                    df = df[df['Nama'] != selected_nama]
+                    save_data(df)
+                    st.warning("🗑️ Data berhasil dihapus!")
 
-                    agama_opts = ["Islam", "Kristen", "Katolik", "Hindu", "Budha", "Khonghucu", "Lainnya"]
-                    agama_val = selected_row.get('Agama', 'Islam')
-                    agama = st.selectbox("Agama", agama_opts, index=agama_opts.index(agama_val) if agama_val in agama_opts else 0)
+    st.button("⬅️ Kembali ke Menu", on_click=lambda: st.session_state.update({"page": "home"}))
 
-                    pendidikan_opts = ["Tidak Sekolah", "SD", "SMP", "SMA", "D1", "D3", "S1", "S2", "S3"]
-                    pendidikan_val = selected_row.get('Pendidikan', 'SD')
-                    pendidikan = st.selectbox("Pendidikan", pendidikan_opts, index=pendidikan_opts.index(pendidikan_val) if pendidikan_val in pendidikan_opts else 0)
+# ---------------------- IMPORT EXCEL -----------------------
+elif st.session_state.page == "import":
+    st.header("📤 Import Data dari Excel (.xlsx)")
+    st.info("Pastikan file memiliki header yang sesuai.")
 
-                    pekerjaan = st.text_input("Pekerjaan", selected_row.get('Pekerjaan', ''))
+    uploaded_file = st.file_uploader("Unggah File Excel", type=["xlsx"])
+    if uploaded_file:
+        try:
+            new_df = pd.read_excel(uploaded_file)
+            expected_columns = [
+                'Nama', 'NIK', 'No KK', 'Jenis Kelamin', 'Tempat Lahir', 'Tanggal Lahir',
+                'Status Perkawinan', 'Agama', 'Pendidikan', 'Pekerjaan', 'Golongan Darah',
+                'Nama Ayah', 'Nama Ibu', 'RT', 'RW', 'Alamat', 'No HP'
+            ]
 
-                    goldar_opts = ["A", "B", "AB", "O", "-", "Tidak Tahu"]
-                    goldar_val = selected_row.get('Golongan Darah', '-')
-                    goldar = st.selectbox("Golongan Darah", goldar_opts, index=goldar_opts.index(goldar_val) if goldar_val in goldar_opts else 0)
-
-                    ayah = st.text_input("Nama Ayah", selected_row.get('Nama Ayah', ''))
-                    ibu = st.text_input("Nama Ibu", selected_row.get('Nama Ibu', ''))
-
-                    rt_opts = [f"RT 0{i+1}" for i in range(7)]
-                    rt_val = selected_row.get('RT', 'RT 01')
-                    rt = st.selectbox("RT", rt_opts, index=rt_opts.index(rt_val) if rt_val in rt_opts else 0)
-
-                    alamat = st.text_area("Alamat", selected_row.get('Alamat', ''))
-                    hp = st.text_input("No HP", selected_row.get('No HP', ''))
-
-                    col1, col2 = st.columns(2)
-                    update = col1.form_submit_button("✏️ Update")
-                    delete = col2.form_submit_button("🗑️ Hapus")
-
-                    if update:
-                        df.loc[df['Nama'] == selected_nama] = [
-                            nama, nik, kk, jk, tempat, tgl.strftime("%d/%m/%Y"), status,
-                            agama, pendidikan, pekerjaan, goldar, ayah, ibu, rt, "RW 01", alamat, hp
-                        ]
-                        save_data(df)
-                        st.success("✅ Data berhasil diperbarui!")
-
-                    if delete:
-                        df = df[df['Nama'] != selected_nama]
-                        save_data(df)
-                        st.warning("🗑️ Data berhasil dihapus!")
+            if all(col in new_df.columns for col in expected_columns):
+                df = load_data()
+                df = pd.concat([df, new_df], ignore_index=True)
+                save_data(df)
+                st.success(f"✅ {len(new_df)} data berhasil ditambahkan.")
+            else:
+                st.error("❌ Kolom tidak sesuai. Gunakan format template yang benar.")
+        except Exception as e:
+            st.error(f"Terjadi kesalahan: {e}")
 
     st.button("⬅️ Kembali ke Menu", on_click=lambda: st.session_state.update({"page": "home"}))
