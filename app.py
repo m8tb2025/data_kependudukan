@@ -41,7 +41,7 @@ if "page" not in st.session_state:
 # ------------------------
 if st.session_state.page == "home":
     st.markdown("""
-        <div style="text-align:center; background-color:#e7f0fa; padding: 20px; border-radius: 12px;">
+        <div style="text-align:center; background-color:#e7f0fa; padding: 14px; border-radius: 12px;">
             <h1 style="color:#0b5394; font-weight:bold; text-transform:uppercase;">📱 DATA KEPENDUDUKAN</h1>
             <h3 style="margin-top:-10px; color:#000000; font-weight:bold;">Dusun Klotok, Desa Simogirang</h3>
             <p style="font-size:16px; color:#444;">""" + waktu_sekarang() + """</p>
