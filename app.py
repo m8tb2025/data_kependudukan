@@ -81,7 +81,16 @@ if st.session_state.page == "edit":
                 jk = st.selectbox("Jenis Kelamin", ["Laki-laki", "Perempuan"],
                                   index=["Laki-laki", "Perempuan"].index(selected_row.get('Jenis Kelamin', 'Laki-laki')))
                 tempat = st.text_input("Tempat Lahir", selected_row.get('Tempat Lahir', ''))
-                tgl = st.date_input("Tanggal Lahir", datetime.strptime(selected_row.get('Tanggal Lahir', '01/01/1990'), "%d/%m/%Y"))
+
+                tgl_raw = selected_row.get('Tanggal Lahir', '01/01/1990')
+                try:
+                    tgl = pd.to_datetime(tgl_raw, dayfirst=True, errors='coerce')
+                    if pd.isnull(tgl):
+                        tgl = datetime(1990, 1, 1)
+                except:
+                    tgl = datetime(1990, 1, 1)
+                tgl = st.date_input("Tanggal Lahir", tgl)
+
                 status = st.selectbox("Status Perkawinan", ["Belum Kawin", "Kawin", "Cerai Hidup", "Cerai Mati"],
                                       index=["Belum Kawin", "Kawin", "Cerai Hidup", "Cerai Mati"].index(selected_row.get('Status Perkawinan', 'Belum Kawin')))
                 agama = st.selectbox("Agama", ["Islam", "Kristen", "Katolik", "Hindu", "Budha", "Khonghucu", "Lainnya"],
