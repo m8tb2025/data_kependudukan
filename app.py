@@ -4,9 +4,22 @@ import os
 from datetime import datetime, date
 import pytz
 
+# --- Konstanta ---
 DATA_FILE = 'data_penduduk.csv'
+USERS = {
+    "admin": "sumberarta123",
+    "sekretaris": "sekretaris456",
+    "bendahara": "uang2024",
+    "ketuart": "klotokrt",
+    "anggota1": "anggota001",
+    "anggota2": "anggota002",
+    "anggota3": "anggota003",
+    "anggota4": "anggota004",
+    "anggota5": "anggota005",
+    "anggota6": "anggota006"
+}
 
-# Fungsi Data Handling
+# --- Fungsi Data Handling ---
 def load_data():
     if os.path.exists(DATA_FILE):
         return pd.read_csv(DATA_FILE)
@@ -27,8 +40,39 @@ def waktu_sekarang():
     now = datetime.now(tz)
     return now.strftime('%A, %-d %B %Y • %H:%M WIB')
 
-# Konfigurasi Streamlit
-st.set_page_config(page_title="Data Kependudukan", layout="centered")
+# --- Konfigurasi Halaman ---
+st.set_page_config(page_title="Data Kependudukan RT", layout="centered")
+
+# --- Sistem Login ---
+if "authenticated" not in st.session_state:
+    st.session_state.authenticated = False
+    st.session_state.username = ""
+
+if not st.session_state.authenticated:
+    with st.form("login_form"):
+        st.markdown("## 🔐 Login Aplikasi Kependudukan RT")
+        username = st.text_input("👤 Username")
+        password = st.text_input("🔑 Password", type="password")
+        login = st.form_submit_button("Masuk")
+        if login:
+            if username in USERS and password == USERS[username]:
+                st.session_state.authenticated = True
+                st.session_state.username = username
+                st.experimental_rerun()
+            else:
+                st.error("❌ Username atau password salah.")
+    st.stop()
+
+# --- Tombol Logout di Sidebar ---
+with st.sidebar:
+    st.markdown(f"👋 Halo, **{st.session_state.username}**")
+    if st.button("🚪 Logout"):
+        st.session_state.authenticated = False
+        st.session_state.username = ""
+        st.session_state.page = "home"
+        st.experimental_rerun()
+
+# --- Navigasi Halaman ---
 if "page" not in st.session_state:
     st.session_state.page = "home"
 
@@ -43,7 +87,6 @@ if st.session_state.page == "home":
     """, unsafe_allow_html=True)
 
     st.markdown("## 📋 Pilih Menu")
-
     col1, col2 = st.columns(2)
     with col1:
         if st.button("📄 Lihat Data", use_container_width=True):
@@ -76,7 +119,6 @@ elif st.session_state.page == "lihat":
 elif st.session_state.page == "input":
     st.header("➕ Input Data Baru")
     df = load_data()
-
     with st.form("form_input"):
         nama = st.text_input("Nama")
         nik = st.text_input("NIK")
@@ -119,21 +161,18 @@ elif st.session_state.page == "input":
             df = pd.concat([df, pd.DataFrame([new_data])], ignore_index=True)
             save_data(df)
             st.success("✅ Data berhasil disimpan!")
-
     st.button("⬅️ Kembali ke Menu", on_click=lambda: st.session_state.update({"page": "home"}))
 
 # ---------------------- EDIT / HAPUS -----------------------
 elif st.session_state.page == "edit":
     st.header("✏️ Edit / Hapus Data")
     df = load_data()
-
     if df.empty:
         st.info("Belum ada data.")
     else:
         keyword = st.text_input("🔍 Cari Nama", "")
         nama_list = df['Nama'].dropna().unique().tolist()
         filtered_nama = [n for n in nama_list if keyword.lower() in n.lower()]
-
         if not filtered_nama:
             st.warning("Tidak ada nama yang cocok.")
         else:
@@ -144,10 +183,7 @@ elif st.session_state.page == "edit":
             try:
                 tgl_lahir = datetime.strptime(selected_row['Tanggal Lahir'], "%d/%m/%Y").date()
             except:
-                try:
-                    tgl_lahir = datetime.strptime(selected_row['Tanggal Lahir'], "%Y-%m-%d").date()
-                except:
-                    tgl_lahir = date(1990, 1, 1)
+                tgl_lahir = date(1990, 1, 1)
 
             with st.form("form_edit"):
                 nama = st.text_input("Nama", selected_row['Nama'])
@@ -178,19 +214,16 @@ elif st.session_state.page == "edit":
                     ]
                     save_data(df)
                     st.success("✅ Data berhasil diperbarui!")
-
                 if delete:
                     df = df[df['Nama'] != selected_nama]
                     save_data(df)
                     st.warning("🗑️ Data berhasil dihapus!")
-
     st.button("⬅️ Kembali ke Menu", on_click=lambda: st.session_state.update({"page": "home"}))
 
 # ---------------------- IMPORT EXCEL -----------------------
 elif st.session_state.page == "import":
     st.header("📤 Import Data dari Excel (.xlsx)")
     st.info("Pastikan file memiliki header yang sesuai.")
-
     uploaded_file = st.file_uploader("Unggah File Excel", type=["xlsx"])
     if uploaded_file:
         try:
@@ -200,15 +233,13 @@ elif st.session_state.page == "import":
                 'Status Perkawinan', 'Agama', 'Pendidikan', 'Pekerjaan', 'Golongan Darah',
                 'Nama Ayah', 'Nama Ibu', 'RT', 'RW', 'Alamat', 'No HP'
             ]
-
             if all(col in new_df.columns for col in expected_columns):
                 df = load_data()
                 df = pd.concat([df, new_df], ignore_index=True)
                 save_data(df)
                 st.success(f"✅ {len(new_df)} data berhasil ditambahkan.")
             else:
-                st.error("❌ Kolom tidak sesuai. Gunakan format template yang benar.")
+                st.error("❌ Format kolom tidak sesuai.")
         except Exception as e:
             st.error(f"Terjadi kesalahan: {e}")
-
     st.button("⬅️ Kembali ke Menu", on_click=lambda: st.session_state.update({"page": "home"}))
