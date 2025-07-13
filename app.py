@@ -124,7 +124,13 @@ elif st.session_state.page == "input":
         kk = st.text_input("No KK")
         jk = st.selectbox("Jenis Kelamin", ["Laki-laki", "Perempuan"])
         tempat = st.text_input("Tempat Lahir")
-        tgl = st.date_input("Tanggal Lahir", date(1990, 1, 1), format="DD/MM/YYYY")
+        tgl = st.date_input(
+            "Tanggal Lahir", 
+            value=date(1990, 1, 1),
+            min_value=date(1950, 1, 1), 
+            max_value=date.today(),
+            format="DD/MM/YYYY"
+        )
         status = st.selectbox("Status Perkawinan", ["Belum Kawin", "Kawin", "Cerai Hidup", "Cerai Mati"])
         agama = st.selectbox("Agama", ["Islam", "Kristen", "Katolik", "Hindu", "Budha", "Khonghucu", "Lainnya"])
         pendidikan = st.selectbox("Pendidikan", ["Tidak Sekolah", "SD", "SMP", "SMA", "D1", "D3", "S1", "S2", "S3"])
@@ -179,7 +185,13 @@ elif st.session_state.page == "edit":
                 kk = st.text_input("No KK", selected_row['No KK'])
                 jk = st.selectbox("Jenis Kelamin", ["Laki-laki", "Perempuan"], index=0 if selected_row['Jenis Kelamin'] == "Laki-laki" else 1)
                 tempat = st.text_input("Tempat Lahir", selected_row['Tempat Lahir'])
-                tgl = st.date_input("Tanggal Lahir", tgl_lahir, format="DD/MM/YYYY")
+                tgl = st.date_input(
+                    "Tanggal Lahir", 
+                    value=tgl_lahir,
+                    min_value=date(1950, 1, 1), 
+                    max_value=date.today(),
+                    format="DD/MM/YYYY"
+                )
                 status = st.selectbox("Status Perkawinan", ["Belum Kawin", "Kawin", "Cerai Hidup", "Cerai Mati"])
                 agama = st.selectbox("Agama", ["Islam", "Kristen", "Katolik", "Hindu", "Budha", "Khonghucu", "Lainnya"])
                 pendidikan = st.selectbox("Pendidikan", ["Tidak Sekolah", "SD", "SMP", "SMA", "D1", "D3", "S1", "S2", "S3"])
