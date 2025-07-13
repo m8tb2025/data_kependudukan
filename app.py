@@ -68,16 +68,15 @@ if not st.session_state.authenticated:
 with st.sidebar:
     st.markdown(f"👋 Halo, **{st.session_state.username}**")
     if st.button("🚪 Logout"):
-        st.session_state.authenticated = False
-        st.session_state.username = ""
-        st.session_state.page = "home"
-        st.experimental_rerun()
+        st.session_state.clear()
+        st.success("✅ Anda telah logout.")
+        st.stop()
 
 # --- Navigasi Halaman ---
 if "page" not in st.session_state:
     st.session_state.page = "home"
 
-# ---------------- HALAMAN UTAMA ----------------
+# === Halaman Utama ===
 if st.session_state.page == "home":
     st.markdown(f"""
         <div style="text-align:center; background-color:#e7f0fa; padding: 14px; border-radius: 12px;">
@@ -105,7 +104,7 @@ if st.session_state.page == "home":
 
     st.download_button("⬇️ Unduh Data CSV", load_data().to_csv(index=False), file_name='data_penduduk.csv')
 
-# ---------------- LIHAT DATA ----------------
+# === Lihat Data ===
 elif st.session_state.page == "lihat":
     st.header("📄 Lihat Data Penduduk")
     df = load_data()
@@ -115,7 +114,7 @@ elif st.session_state.page == "lihat":
         st.dataframe(df, use_container_width=True)
     st.button("⬅️ Kembali ke Menu", on_click=lambda: st.session_state.update({"page": "home"}))
 
-# ---------------- INPUT DATA ----------------
+# === Input Data ===
 elif st.session_state.page == "input":
     st.header("➕ Input Data Baru")
     df = load_data()
@@ -152,7 +151,7 @@ elif st.session_state.page == "input":
             st.success("✅ Data berhasil disimpan!")
     st.button("⬅️ Kembali ke Menu", on_click=lambda: st.session_state.update({"page": "home"}))
 
-# ---------------- EDIT / HAPUS ----------------
+# === Edit / Hapus ===
 elif st.session_state.page == "edit":
     st.header("✏️ Edit / Hapus Data")
     df = load_data()
@@ -209,7 +208,7 @@ elif st.session_state.page == "edit":
                     st.warning("🗑️ Data berhasil dihapus!")
     st.button("⬅️ Kembali ke Menu", on_click=lambda: st.session_state.update({"page": "home"}))
 
-# ---------------- IMPORT EXCEL ----------------
+# === Import Excel ===
 elif st.session_state.page == "import":
     st.header("📤 Import Data dari Excel (.xlsx)")
     st.info("Pastikan file memiliki header yang sesuai.")
