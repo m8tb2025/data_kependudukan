@@ -8,15 +8,15 @@ import pytz
 DATA_FILE = 'data_penduduk.csv'
 USERS = {
     "admin": "sumberarta123",
-    "sekretaris": "sekretaris456",
-    "bendahara": "uang2024",
-    "ketuart": "klotokrt",
-    "anggota1": "anggota001",
-    "anggota2": "anggota002",
-    "anggota3": "anggota003",
-    "anggota4": "anggota004",
-    "anggota5": "anggota005",
-    "anggota6": "anggota006"
+    "sekretaris": "klotokrt1",
+    "bendahara": "rt1klotok",
+    "ketuart": "riaji2025",
+    "fiona1": "fiona001",
+    "fiona2": "fiona002",
+    "fiona3": "fiona003",
+    "fiona4": "fiona004",
+    "fiona5": "fiona005",
+    "fiona6": "fiona006"
 }
 
 # --- Fungsi Data Handling ---
