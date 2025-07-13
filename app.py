@@ -58,12 +58,13 @@ if not st.session_state.authenticated:
             if username in USERS and password == USERS[username]:
                 st.session_state.authenticated = True
                 st.session_state.username = username
-                st.experimental_rerun()
+                st.success(f"✅ Login berhasil sebagai **{username}**")
+                st.stop()
             else:
                 st.error("❌ Username atau password salah.")
     st.stop()
 
-# --- Tombol Logout di Sidebar ---
+# --- Tombol Logout ---
 with st.sidebar:
     st.markdown(f"👋 Halo, **{st.session_state.username}**")
     if st.button("🚪 Logout"):
@@ -76,7 +77,7 @@ with st.sidebar:
 if "page" not in st.session_state:
     st.session_state.page = "home"
 
-# ---------------------- HALAMAN UTAMA -----------------------
+# ---------------- HALAMAN UTAMA ----------------
 if st.session_state.page == "home":
     st.markdown(f"""
         <div style="text-align:center; background-color:#e7f0fa; padding: 14px; border-radius: 12px;">
@@ -94,7 +95,6 @@ if st.session_state.page == "home":
     with col2:
         if st.button("➕ Input Data", use_container_width=True):
             st.session_state.page = "input"
-
     col3, col4 = st.columns(2)
     with col3:
         if st.button("✏️ Edit / Hapus", use_container_width=True):
@@ -105,7 +105,7 @@ if st.session_state.page == "home":
 
     st.download_button("⬇️ Unduh Data CSV", load_data().to_csv(index=False), file_name='data_penduduk.csv')
 
-# ---------------------- LIHAT DATA -----------------------
+# ---------------- LIHAT DATA ----------------
 elif st.session_state.page == "lihat":
     st.header("📄 Lihat Data Penduduk")
     df = load_data()
@@ -115,7 +115,7 @@ elif st.session_state.page == "lihat":
         st.dataframe(df, use_container_width=True)
     st.button("⬅️ Kembali ke Menu", on_click=lambda: st.session_state.update({"page": "home"}))
 
-# ---------------------- INPUT DATA -----------------------
+# ---------------- INPUT DATA ----------------
 elif st.session_state.page == "input":
     st.header("➕ Input Data Baru")
     df = load_data()
@@ -140,30 +140,19 @@ elif st.session_state.page == "input":
         simpan = st.form_submit_button("✅ Simpan")
         if simpan:
             new_data = {
-                'Nama': nama,
-                'NIK': nik,
-                'No KK': kk,
-                'Jenis Kelamin': jk,
-                'Tempat Lahir': tempat,
-                'Tanggal Lahir': tgl.strftime("%d/%m/%Y"),
-                'Status Perkawinan': status,
-                'Agama': agama,
-                'Pendidikan': pendidikan,
-                'Pekerjaan': pekerjaan,
-                'Golongan Darah': goldar,
-                'Nama Ayah': ayah,
-                'Nama Ibu': ibu,
-                'RT': rt,
-                'RW': "RW 01",
-                'Alamat': alamat,
-                'No HP': hp
+                'Nama': nama, 'NIK': nik, 'No KK': kk, 'Jenis Kelamin': jk,
+                'Tempat Lahir': tempat, 'Tanggal Lahir': tgl.strftime("%d/%m/%Y"),
+                'Status Perkawinan': status, 'Agama': agama, 'Pendidikan': pendidikan,
+                'Pekerjaan': pekerjaan, 'Golongan Darah': goldar,
+                'Nama Ayah': ayah, 'Nama Ibu': ibu, 'RT': rt, 'RW': "RW 01",
+                'Alamat': alamat, 'No HP': hp
             }
             df = pd.concat([df, pd.DataFrame([new_data])], ignore_index=True)
             save_data(df)
             st.success("✅ Data berhasil disimpan!")
     st.button("⬅️ Kembali ke Menu", on_click=lambda: st.session_state.update({"page": "home"}))
 
-# ---------------------- EDIT / HAPUS -----------------------
+# ---------------- EDIT / HAPUS ----------------
 elif st.session_state.page == "edit":
     st.header("✏️ Edit / Hapus Data")
     df = load_data()
@@ -192,11 +181,11 @@ elif st.session_state.page == "edit":
                 jk = st.selectbox("Jenis Kelamin", ["Laki-laki", "Perempuan"], index=0 if selected_row['Jenis Kelamin'] == "Laki-laki" else 1)
                 tempat = st.text_input("Tempat Lahir", selected_row['Tempat Lahir'])
                 tgl = st.date_input("Tanggal Lahir", tgl_lahir, format="DD/MM/YYYY")
-                status = st.selectbox("Status Perkawinan", ["Belum Kawin", "Kawin", "Cerai Hidup", "Cerai Mati"], index=0)
-                agama = st.selectbox("Agama", ["Islam", "Kristen", "Katolik", "Hindu", "Budha", "Khonghucu", "Lainnya"], index=0)
-                pendidikan = st.selectbox("Pendidikan", ["Tidak Sekolah", "SD", "SMP", "SMA", "D1", "D3", "S1", "S2", "S3"], index=0)
+                status = st.selectbox("Status Perkawinan", ["Belum Kawin", "Kawin", "Cerai Hidup", "Cerai Mati"])
+                agama = st.selectbox("Agama", ["Islam", "Kristen", "Katolik", "Hindu", "Budha", "Khonghucu", "Lainnya"])
+                pendidikan = st.selectbox("Pendidikan", ["Tidak Sekolah", "SD", "SMP", "SMA", "D1", "D3", "S1", "S2", "S3"])
                 pekerjaan = st.text_input("Pekerjaan", selected_row['Pekerjaan'])
-                goldar = st.selectbox("Golongan Darah", ["A", "B", "AB", "O", "-", "Tidak Tahu"], index=0)
+                goldar = st.selectbox("Golongan Darah", ["A", "B", "AB", "O", "-", "Tidak Tahu"])
                 ayah = st.text_input("Nama Ayah", selected_row['Nama Ayah'])
                 ibu = st.text_input("Nama Ibu", selected_row['Nama Ibu'])
                 rt = st.selectbox("RT", [f"RT 0{i+1}" for i in range(7)], index=0)
@@ -220,7 +209,7 @@ elif st.session_state.page == "edit":
                     st.warning("🗑️ Data berhasil dihapus!")
     st.button("⬅️ Kembali ke Menu", on_click=lambda: st.session_state.update({"page": "home"}))
 
-# ---------------------- IMPORT EXCEL -----------------------
+# ---------------- IMPORT EXCEL ----------------
 elif st.session_state.page == "import":
     st.header("📤 Import Data dari Excel (.xlsx)")
     st.info("Pastikan file memiliki header yang sesuai.")
