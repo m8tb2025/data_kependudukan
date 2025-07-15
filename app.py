@@ -6,6 +6,7 @@ import pytz
 
 # --- Konstanta ---
 DATA_FILE = 'data_penduduk.csv'
+VISITOR_FILE = 'visitor_count.txt'
 USERS = {
     "admin": "sumberarta123",
     "sekretaris": "klotokrt1",
@@ -39,6 +40,21 @@ def waktu_sekarang():
     tz = pytz.timezone('Asia/Jakarta')
     now = datetime.now(tz)
     return now.strftime('%A, %-d %B %Y • %H:%M WIB')
+
+# --- Fungsi Visitor Counter ---
+def load_visitor_count():
+    if os.path.exists(VISITOR_FILE):
+        with open(VISITOR_FILE, "r") as f:
+            try:
+                return int(f.read())
+            except:
+                return 0
+    else:
+        return 0
+
+def save_visitor_count(count):
+    with open(VISITOR_FILE, "w") as f:
+        f.write(str(count))
 
 # --- Konfigurasi Halaman ---
 st.set_page_config(page_title="Data Kependudukan RT", layout="centered")
@@ -78,6 +94,15 @@ if "page" not in st.session_state:
 
 # === Halaman Utama ===
 if st.session_state.page == "home":
+
+    # Hitung Visitor jika belum pernah
+    if "visitor_tracked" not in st.session_state:
+        st.session_state.visitor_tracked = True
+        count = load_visitor_count() + 1
+        save_visitor_count(count)
+    else:
+        count = load_visitor_count()
+
     st.markdown(f"""
         <div style="text-align:center; background-color:#e7f0fa; padding: 14px; border-radius: 12px;">
             <h1 style="color:#0b5394; font-weight:bold;">📱 DATA KEPENDUDUKAN</h1>
@@ -104,6 +129,14 @@ if st.session_state.page == "home":
 
     st.download_button("⬇️ Unduh Data CSV", load_data().to_csv(index=False), file_name='data_penduduk.csv')
 
+    # Tampilkan Visitor Counter
+    st.markdown("---")
+    st.markdown(f"""
+    <div style="text-align:center; color:gray; font-size:14px;">
+        👁️ Jumlah Pengunjung: <b>{count}</b>
+    </div>
+    """, unsafe_allow_html=True)
+
 # === Lihat Data ===
 elif st.session_state.page == "lihat":
     st.header("📄 Lihat Data Penduduk")
@@ -124,13 +157,7 @@ elif st.session_state.page == "input":
         kk = st.text_input("No KK")
         jk = st.selectbox("Jenis Kelamin", ["Laki-laki", "Perempuan"])
         tempat = st.text_input("Tempat Lahir")
-        tgl = st.date_input(
-            "Tanggal Lahir", 
-            value=date(1990, 1, 1),
-            min_value=date(1950, 1, 1), 
-            max_value=date.today(),
-            format="DD/MM/YYYY"
-        )
+        tgl = st.date_input("Tanggal Lahir", value=date(1990, 1, 1), min_value=date(1950, 1, 1), max_value=date.today(), format="DD/MM/YYYY")
         status = st.selectbox("Status Perkawinan", ["Belum Kawin", "Kawin", "Cerai Hidup", "Cerai Mati"])
         agama = st.selectbox("Agama", ["Islam", "Kristen", "Katolik", "Hindu", "Budha", "Khonghucu", "Lainnya"])
         pendidikan = st.selectbox("Pendidikan", ["Tidak Sekolah", "SD", "SMP", "SMA", "D1", "D3", "S1", "S2", "S3"])
@@ -141,7 +168,6 @@ elif st.session_state.page == "input":
         rt = st.selectbox("RT", [f"RT 0{i+1}" for i in range(7)])
         alamat = st.text_area("Alamat")
         hp = st.text_input("No HP")
-
         simpan = st.form_submit_button("✅ Simpan")
         if simpan:
             new_data = {
@@ -185,13 +211,7 @@ elif st.session_state.page == "edit":
                 kk = st.text_input("No KK", selected_row['No KK'])
                 jk = st.selectbox("Jenis Kelamin", ["Laki-laki", "Perempuan"], index=0 if selected_row['Jenis Kelamin'] == "Laki-laki" else 1)
                 tempat = st.text_input("Tempat Lahir", selected_row['Tempat Lahir'])
-                tgl = st.date_input(
-                    "Tanggal Lahir", 
-                    value=tgl_lahir,
-                    min_value=date(1950, 1, 1), 
-                    max_value=date.today(),
-                    format="DD/MM/YYYY"
-                )
+                tgl = st.date_input("Tanggal Lahir", value=tgl_lahir, min_value=date(1950, 1, 1), max_value=date.today(), format="DD/MM/YYYY")
                 status = st.selectbox("Status Perkawinan", ["Belum Kawin", "Kawin", "Cerai Hidup", "Cerai Mati"])
                 agama = st.selectbox("Agama", ["Islam", "Kristen", "Katolik", "Hindu", "Budha", "Khonghucu", "Lainnya"])
                 pendidikan = st.selectbox("Pendidikan", ["Tidak Sekolah", "SD", "SMP", "SMA", "D1", "D3", "S1", "S2", "S3"])
@@ -202,11 +222,9 @@ elif st.session_state.page == "edit":
                 rt = st.selectbox("RT", [f"RT 0{i+1}" for i in range(7)], index=0)
                 alamat = st.text_area("Alamat", selected_row['Alamat'])
                 hp = st.text_input("No HP", selected_row['No HP'])
-
                 col1, col2 = st.columns(2)
                 update = col1.form_submit_button("✏️ Update")
                 delete = col2.form_submit_button("🗑️ Hapus")
-
                 if update:
                     df.loc[df['Nama'] == selected_nama] = [
                         nama, nik, kk, jk, tempat, tgl.strftime("%d/%m/%Y"), status,
